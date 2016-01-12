@@ -8,7 +8,7 @@ Logstash is a wrapper for the official Logstash image, this image has primarily 
 
 # How to use this image
 
-	docker run --name <your-container-name> -d -p 500:500 -p 12201:12201 -p 25826:25826 docker.accenture.com/dcsc/docker-logstash:VERSION
+	docker run --name <your-container-name> -d -p 500:500 -p 12201:12201 -p 25826:25826 docker.accenture.com/adop/docker-logstash:VERSION
 
 ## Configuration
 
