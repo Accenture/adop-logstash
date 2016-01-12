@@ -1,0 +1,68 @@
+input {
+  tcp {
+    port => 5000
+    # codec => multiline {
+    #   #type => "all" # no type means for all inputs
+    #   pattern => "(^.+Exception: .+)|(^\s+at .+)|(^\s+... \d+ more)|(^\s*Caused by:.+)"
+    #   what => "previous"
+    # }
+  }
+  gelf {
+    port => 12201
+    # codec => multiline {
+    #   #type => "all" # no type means for all inputs
+    #   pattern => "(^.+Exception: .+)|(^\s+at .+)|(^\s+... \d+ more)|(^\s*Caused by:.+)"
+    #   what => "previous"
+    # }
+  }
+  syslog {
+    port => 25826
+    # codec => multiline {
+    #   #type => "all" # no type means for all inputs
+    #   pattern => "(^.+Exception: .+)|(^\s+at .+)|(^\s+... \d+ more)|(^\s*Caused by:.+)"
+    #   what => "previous"
+    # }
+  }
+}
+
+filter {
+  if "docker/" in [program] {
+    mutate {
+      add_field => {
+        "container_id" => "%{program}"
+      }
+    }
+    mutate {
+      gsub => [
+        "container_id", "docker/", ""
+      ]
+    }
+    mutate {
+      update => [
+        "program", "docker"
+      ]
+    }
+  }
+  multiline {
+    #type => "all" # no type means for all inputs
+    pattern => "(^.+Exception: .+)|(^\s+at .+)|(^\s+... \d+ more)|(^\s*Caused by:.+)"
+    what => "previous"
+  }
+  # Remove all new lines from message
+  # mutate {
+  #   gsub => [ "message", "\r", "" ]
+  # }
+  # grok {
+  #   match => [ "message", "(?m)%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:severity} %{GREEDYDATA:message}" ]
+  #   overwrite => [ "message" ]
+  # }
+  # date {
+  #     match => [ "timestamp" , "yyyy-MM-dd HH:mm:ss,SSS" ]
+  # }
+}
+
+output {
+  elasticsearch {
+    hosts => "elasticsearch:9200"
+  }
+}
